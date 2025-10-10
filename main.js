@@ -5,7 +5,7 @@ let prev_tile_coords;
 let current_player = 1;
 
 function setup() {
-  // Create blank canvas
+  // Blank hex board
   createCanvas(windowWidth, windowHeight);
   background("black");
   dimensions.circumradius = width / dimensions.HEX_RADIUS_MAGIC_NUMBER;
@@ -18,13 +18,14 @@ function setup() {
     hex_grid[i][0].draw_thicket();
     hex_grid[i][hex_grid[i].length - 1].draw_thicket();
   }
+
+  // Thickets sticking out of center row
   hex_grid[3][1].draw_thicket();
   hex_grid[3][5].draw_thicket();
 
   hex_grid[2][0].draw_gnome_for_player(1);
   hex_grid[3][0].draw_gnome_for_player(1);
   hex_grid[4][0].draw_gnome_for_player(1);
-
   hex_grid[2][5].draw_gnome_for_player(2);
   hex_grid[3][6].draw_gnome_for_player(2);
   hex_grid[4][5].draw_gnome_for_player(2);
@@ -37,6 +38,7 @@ function mouseClicked() {
   let [q, r] = cartesian_to_hex(mouseX, mouseY);
   q = 6 - (q + 3); // TODO: Why are columns are stored RTL?
   let y = r + (q < 4 ? 3 : 6 - q);
+  
   if (hex_grid[q] && hex_grid[q][y]) {
     if (hex_grid[q][y].has_gnome && hex_grid[q][y].gnome_owner == current_player) {
       if (prev_tile) {
@@ -58,29 +60,9 @@ function mouseClicked() {
   }
 }
 
-function cartesian_to_hex(in_x, in_y) {
-  let x = in_x - width / 2;
-  let y = in_y - height / 2;
-  let q_fractional = (2/3 * x) / dimensions.circumradius;
-  let r_fractional = (-1/3 * x + sqrt(3)/3 * y) / dimensions.circumradius;
-  let s_fractional = -q_fractional - r_fractional;
-  let q_rounded = round(q_fractional);
-  let r_rounded = round(r_fractional);
-  let s_rounded = round(s_fractional);
-  let q_diff = abs(q_rounded - q_fractional);
-  let r_diff = abs(r_rounded - r_fractional);
-  let s_diff = abs(s_rounded - s_fractional);
-  if (q_diff > r_diff && q_diff > s_diff) {
-    q_rounded = -r_rounded - s_rounded;
-  } else if (r_diff > q_diff && r_diff > s_diff) {
-    r_rounded = -q_rounded - s_rounded;
-  }
-  return [q_rounded, r_rounded];
-}
-
 function draw_board() {
   // Using axial coordinates https://www.redblobgames.com/grids/hexagons/#coordinates-axial
-  // # of tiles on q-axis goes from 4 to 7 to 4
+  // # of tiles on q-axis loop from 4 to 7 to 4
   let col_index = 0;
   let q_grow_amt = 1;
   for (let q_length = 4; 
@@ -105,6 +87,26 @@ function draw_board() {
     }
     col_index += 1;
   }
+}
+
+function cartesian_to_hex(in_x, in_y) {
+  let x = in_x - width / 2;
+  let y = in_y - height / 2;
+  let q_fractional = (2/3 * x) / dimensions.circumradius;
+  let r_fractional = (-1/3 * x + sqrt(3)/3 * y) / dimensions.circumradius;
+  let s_fractional = -q_fractional - r_fractional;
+  let q_rounded = round(q_fractional);
+  let r_rounded = round(r_fractional);
+  let s_rounded = round(s_fractional);
+  let q_diff = abs(q_rounded - q_fractional);
+  let r_diff = abs(r_rounded - r_fractional);
+  let s_diff = abs(s_rounded - s_fractional);
+  if (q_diff > r_diff && q_diff > s_diff) {
+    q_rounded = -r_rounded - s_rounded;
+  } else if (r_diff > q_diff && r_diff > s_diff) {
+    r_rounded = -q_rounded - s_rounded;
+  }
+  return [q_rounded, r_rounded];
 }
 
 function neighbors(q1, y1, q2, y2) {

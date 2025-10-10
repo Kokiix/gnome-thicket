@@ -28,8 +28,8 @@ class HexTile {
         beginShape();
         for (let angle = 0; angle < 6.28; angle += PI / 3) {
             vertex(
-            round(this.x + DIMENSIONS.circumradius * cos(angle)), 
-            round(this.y + DIMENSIONS.circumradius * sin(angle)));
+            round(this.x + dimensions.circumradius * cos(angle)), 
+            round(this.y + dimensions.circumradius * sin(angle)));
         }
         endShape(CLOSE);
 
