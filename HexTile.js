@@ -2,9 +2,11 @@ class HexTile {
     constructor(x, y, stroke_weight) {
         this.x = x;
         this.y = y;
+        this.is_hilighted = false;
         this.has_thicket = false;
         this.has_gnome = false;
         this.gnome_owner = 0;
+
         this.weight = stroke_weight;
         this.stroke_color = [51, 102, 68];
         this.fill_color = [87, 135, 75];
@@ -19,8 +21,12 @@ class HexTile {
     }
 
     draw_hover() {this.draw(this.hover_border_color, this.hover_fill_color);}
-    draw_select() {this.draw(this.select_border_color, this.fill_color);}
+    draw_select() {
+        this.draw(this.select_border_color, this.fill_color);
+        this.is_hilighted = true;
+    }
     draw(stroke_color = this.stroke_color, fill_color = this.fill_color) {
+        this.is_hilighted = false;
         strokeWeight(this.weight);
         stroke(stroke_color);
         fill(fill_color);

@@ -1,7 +1,7 @@
 const dimensions = {"HEX_RADIUS_MAGIC_NUMBER": 20};
 const hex_grid = [];
-let prev_tile;
-let prev_tile_coords;
+let highlighted_tiles = [];
+let highlighted_tile_coords = [];
 let current_player = 1;
 
 function setup() {
@@ -38,26 +38,26 @@ function mouseClicked() {
   let [q, r] = cartesian_to_hex(mouseX, mouseY);
   q = 6 - (q + 3); // TODO: Why are columns are stored RTL?
   let y = r + (q < 4 ? 3 : 6 - q);
-  
-  if (hex_grid[q] && hex_grid[q][y]) {
-    if (hex_grid[q][y].has_gnome && hex_grid[q][y].gnome_owner == current_player) {
-      if (prev_tile) {
-        prev_tile.draw();
-      }
-      hex_grid[q][y].draw_select();
-      prev_tile = hex_grid[q][y];
-      prev_tile_coords = [q, y, r];
-    } else if (prev_tile && prev_tile.has_gnome && PLACEHOLDER) {
-      prev_tile.has_gnome = false;
-      prev_tile.draw();
-      prev_tile = undefined;
-      prev_tile_coords = undefined;
 
+  if (hex_grid[q] && hex_grid[q][y]) {
+    let chosen_tile = hex_grid[q][y];
+    // Select gnome
+    if (hex_grid[q][y].has_gnome && chosen_tile.gnome_owner == current_player) {
+      clear_highlighted()
+      hex_grid[q][y].draw_select();
+      highlighted_tiles.push(chosen_tile);
+      highlighted_tile_coords.push([q, y, r]);
+      highlight_bushes();
+      return;
+    // Select location to move to
+    } else if (chosen_tile.is_hilighted) {
+      highlighted_tiles[0].has_gnome = false;
       hex_grid[q][y].draw_gnome_for_player(current_player);
       current_player = current_player == 1 ? 2 : 1;
-      return;
     }
   }
+  
+  clear_highlighted();
 }
 
 function draw_board() {
@@ -87,6 +87,18 @@ function draw_board() {
     }
     col_index += 1;
   }
+}
+
+function highlight_bushes() {
+  
+}
+
+function clear_highlighted() {
+  for (let i = 0; i < highlighted_tiles.length; i++) {
+    highlighted_tiles[i].draw();
+  }
+  highlighted_tiles = [];
+  highlighted_tile_coords = [];
 }
 
 function cartesian_to_hex(in_x, in_y) {
