@@ -1,1 +1,2 @@
 - make canvas size adjustable?
+- abbreviate `git push origin HEAD~1:refs/heads/main`

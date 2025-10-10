@@ -10,32 +10,33 @@ function draw() {
 }
 
 function draw_board() {
-  const CIRCUMRAD = windowWidth / 25;
-  const INRADIUS = CIRCUMRAD * sqrt(3) / 2
-  const VERT_OFFSET = (windowHeight - INRADIUS * 14) / 2 + INRADIUS;
-  console.log(VERT_OFFSET);
-  
-  
-  for (let i = 0; i < 7; i++) {
-    let center_x = windowWidth / 2;
-    let center_y = VERT_OFFSET + INRADIUS * i * 2;
-    beginShape();
-    for (let angle = 0; angle < 6.28; angle += PI / 3) {
-      vertex(
-        round(center_x + CIRCUMRAD * cos(angle)), 
-        round(center_y + CIRCUMRAD * sin(angle)));
-    }
-    endShape(CLOSE);
-
-  }
+  const HEX_RADIUS_MAGIC_NUMBER = 20;
+  const circumradius = windowWidth / HEX_RADIUS_MAGIC_NUMBER;
+  const inradius = circumradius * sqrt(3) / 2;
+  const board_vert_offset = (windowHeight - inradius * 14) / 2 + inradius;
 
   // # of tiles in q-dimension goes from 4 to 7 to 4
-  // let board_q_grow = true;
-  // for (let q_length = 4; 
-  //   q_length <= 7 && q_length >=4; 
-  //   q_length += board_q_grow ? 1 : -1) {
+  let board_q_grow_amt = 1;
+  for (let q_length = 4; 
+    q_length <= 7 && q_length >=4; 
+    q_length += board_q_grow_amt) {
+    
+    // Iterate down the q axis
+    const col_offset = board_vert_offset + (7 - q_length) * inradius;
+    for (let q = 0; q < q_length; q++) {
+      const center_x = windowWidth / 2 + (7 - q_length) * board_q_grow_amt * circumradius * 2 * 0.75;
+      const center_y = col_offset + inradius * q * 2;
+      beginShape();
+      for (let angle = 0; angle < 6.28; angle += PI / 3) {
+        vertex(
+          round(center_x + circumradius * cos(angle)), 
+          round(center_y + circumradius * sin(angle)));
+      }
+      endShape(CLOSE);
+    }   
 
-  //   // draw hexes here      
-  // }
-
+    if (q_length == 7) {
+      board_q_grow_amt = -1;
+    }
+  }
 }
