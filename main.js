@@ -1,5 +1,6 @@
-const HEX_GRID = [];
 const DIMENSIONS = {"HEX_RADIUS_MAGIC_NUMBER": 20};
+const hex_grid = [];
+let to_deselect;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -14,8 +15,23 @@ function draw() {
 }
 
 function mouseClicked() {
-  let x = mouseX - width / 2;
-  let y = mouseY - height / 2;
+  if (to_deselect) {
+    to_deselect.draw();
+    to_deselect = undefined;
+  }
+
+  let [q, r] = cartesian_to_hex(mouseX, mouseY);
+  q = 6 - (q + 3); // TODO: Why are columns are stored RTL?
+  r += q < 4 ? 3 : 6 - q;
+  if (hex_grid[q] && hex_grid[q][r]) {
+    hex_grid[q][r].draw_select();
+    to_deselect = hex_grid[q][r];
+  }
+}
+
+function cartesian_to_hex(in_x, in_y) {
+  let x = in_x - width / 2;
+  let y = in_y - height / 2;
   let q_fractional = (2/3 * x) / DIMENSIONS.circumradius;
   let r_fractional = (-1/3 * x + sqrt(3)/3 * y) / DIMENSIONS.circumradius;
   let s_fractional = -q_fractional - r_fractional;
@@ -30,7 +46,7 @@ function mouseClicked() {
   } else if (r_diff > q_diff && r_diff > s_diff) {
     r_rounded = -q_rounded - s_rounded;
   }
-  console.log(q_rounded, r_rounded);
+  return [q_rounded, r_rounded];
 }
 
 function draw_board() {
@@ -46,26 +62,22 @@ function draw_board() {
     q_length <= 7 && q_length >=4; 
     q_length += q_grow_amt) {
 
-    HEX_GRID[col_index] = [];
+    hex_grid[col_index] = [];
     
     // Given each length, iterate down q axis
     const col_offset = DIMENSIONS.board_vert_offset + (7 - q_length) * DIMENSIONS.inradius;
     for (let q = 0; q < q_length; q++) {
-      HEX_GRID[col_index][q] = new HexTile();
 
       const center_x = width / 2 + (7 - q_length) * q_grow_amt * DIMENSIONS.circumradius * 2 * 0.75;
       const center_y = col_offset + DIMENSIONS.inradius * q * 2;
-      beginShape();
-      for (let angle = 0; angle < 6.28; angle += PI / 3) {
-        vertex(
-          round(center_x + DIMENSIONS.circumradius * cos(angle)), 
-          round(center_y + DIMENSIONS.circumradius * sin(angle)));
-      }
-      endShape(CLOSE);
+
+      hex_grid[col_index][q] = new HexTile(center_x, center_y, DIMENSIONS.circumradius / DIMENSIONS.HEX_RADIUS_MAGIC_NUMBER * 2);
+      hex_grid[col_index][q].draw();
     }
 
     if (q_length == 7) {
       q_grow_amt = -1;
     }
+    col_index += 1;
   }
 }
