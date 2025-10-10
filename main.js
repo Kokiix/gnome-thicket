@@ -1,6 +1,8 @@
 const DIMENSIONS = {"HEX_RADIUS_MAGIC_NUMBER": 20};
 const hex_grid = [];
-let to_deselect;
+let prev_tile;
+let prev_tile_coords;
+let current_player = 1;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -9,23 +11,47 @@ function setup() {
   DIMENSIONS.inradius = DIMENSIONS.circumradius * sqrt(3) / 2;
   DIMENSIONS.board_vert_offset = (height - DIMENSIONS.inradius * 14) / 2 + DIMENSIONS.inradius;
   draw_board();
+
+  hex_grid[2][0].draw_thicket();
+  hex_grid[2][0].draw_gnome_for_player(1);
+  hex_grid[3][0].draw_thicket();
+  hex_grid[3][0].draw_gnome_for_player(1);
+  hex_grid[4][0].draw_thicket();
+  hex_grid[4][0].draw_gnome_for_player(1);
+
+  hex_grid[2][5].draw_thicket();
+  hex_grid[2][5].draw_gnome_for_player(2);
+  hex_grid[3][6].draw_thicket();
+  hex_grid[3][6].draw_gnome_for_player(2);
+  hex_grid[4][5].draw_thicket();
+  hex_grid[4][5].draw_gnome_for_player(2);
 }
 
 function draw() {
 }
 
 function mouseClicked() {
-  if (to_deselect) {
-    to_deselect.draw();
-    to_deselect = undefined;
-  }
-
   let [q, r] = cartesian_to_hex(mouseX, mouseY);
   q = 6 - (q + 3); // TODO: Why are columns are stored RTL?
-  r += q < 4 ? 3 : 6 - q;
-  if (hex_grid[q] && hex_grid[q][r]) {
-    hex_grid[q][r].draw_select();
-    to_deselect = hex_grid[q][r];
+  let y = r + (q < 4 ? 3 : 6 - q);
+  if (hex_grid[q] && hex_grid[q][y]) {
+    if (hex_grid[q][y].has_gnome && hex_grid[q][y].gnome_owner == current_player) {
+      if (prev_tile) {
+        prev_tile.draw();
+      }
+      hex_grid[q][y].draw_select();
+      prev_tile = hex_grid[q][y];
+      prev_tile_coords = [q, y];
+    } else if (prev_tile && prev_tile.has_gnome && neighbors(prev_tile_coords[0], prev_tile_coords[1], q, y)) {
+      prev_tile.has_gnome = false;
+      prev_tile.draw();
+      prev_tile = undefined;
+      prev_tile_coords = undefined;
+
+      hex_grid[q][y].draw_gnome_for_player(current_player);
+      current_player = current_player == 1 ? 2 : 1;
+      return;
+    }
   }
 }
 
@@ -50,10 +76,6 @@ function cartesian_to_hex(in_x, in_y) {
 }
 
 function draw_board() {
-  strokeWeight(DIMENSIONS.circumradius / DIMENSIONS.HEX_RADIUS_MAGIC_NUMBER * 2);
-  stroke(51, 102, 68);
-  fill(87, 135, 75);
-
   // Using axial coordinates https://www.redblobgames.com/grids/hexagons/#coordinates-axial
   // # of tiles on q-axis goes from 4 to 7 to 4
   let col_index = 0;
@@ -71,7 +93,7 @@ function draw_board() {
       const center_x = width / 2 + (7 - q_length) * q_grow_amt * DIMENSIONS.circumradius * 2 * 0.75;
       const center_y = col_offset + DIMENSIONS.inradius * q * 2;
 
-      hex_grid[col_index][q] = new HexTile(center_x, center_y, DIMENSIONS.circumradius / DIMENSIONS.HEX_RADIUS_MAGIC_NUMBER * 2);
+      hex_grid[col_index][q] = new HexTile(center_x, center_y, DIMENSIONS.circumradius / DIMENSIONS.HEX_RADIUS_MAGIC_NUMBER * 1.5);
       hex_grid[col_index][q].draw();
     }
 
@@ -80,4 +102,14 @@ function draw_board() {
     }
     col_index += 1;
   }
+}
+
+function neighbors(q1, y1, q2, y2) {
+  if (q1 == q2 && abs(y1 - y2) < 2) {return true;}
+  if (abs(q1 - q2) > 1) {return false;}
+  if (y1 == y2) {return true;}
+  if ((q1 == 3 && y1-y2==1) || (q2 == 3 && y2-y1==1)) {return true;}
+  if (q1 < 3 && ((q1 > q2 && y1 - y2 == -1) || (q2 > q1 && y2 - y1 == -1))) {return true;}
+  if (q1 > 3 && ((q2 > q1 && y2 - y1 == -1) || (q1 > q2 && y1 - y2 == -1))) {return true;}
+  return false;
 }
