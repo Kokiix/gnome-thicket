@@ -1,29 +1,32 @@
-const DIMENSIONS = {"HEX_RADIUS_MAGIC_NUMBER": 20};
+const dimensions = {"HEX_RADIUS_MAGIC_NUMBER": 20};
 const hex_grid = [];
 let prev_tile;
 let prev_tile_coords;
 let current_player = 1;
 
 function setup() {
+  // Create blank canvas
   createCanvas(windowWidth, windowHeight);
   background("black");
-  DIMENSIONS.circumradius = width / DIMENSIONS.HEX_RADIUS_MAGIC_NUMBER;
-  DIMENSIONS.inradius = DIMENSIONS.circumradius * sqrt(3) / 2;
-  DIMENSIONS.board_vert_offset = (height - DIMENSIONS.inradius * 14) / 2 + DIMENSIONS.inradius;
+  dimensions.circumradius = width / dimensions.HEX_RADIUS_MAGIC_NUMBER;
+  dimensions.inradius = dimensions.circumradius * sqrt(3) / 2;
+  dimensions.board_vert_offset = (height - dimensions.inradius * 14) / 2 + dimensions.inradius;
   draw_board();
 
-  hex_grid[2][0].draw_thicket();
+  // Draw thickets on top and bottom border
+  for (let i = 0; i < hex_grid.length; i++) {
+    hex_grid[i][0].draw_thicket();
+    hex_grid[i][hex_grid[i].length - 1].draw_thicket();
+  }
+  hex_grid[3][1].draw_thicket();
+  hex_grid[3][5].draw_thicket();
+
   hex_grid[2][0].draw_gnome_for_player(1);
-  hex_grid[3][0].draw_thicket();
   hex_grid[3][0].draw_gnome_for_player(1);
-  hex_grid[4][0].draw_thicket();
   hex_grid[4][0].draw_gnome_for_player(1);
 
-  hex_grid[2][5].draw_thicket();
   hex_grid[2][5].draw_gnome_for_player(2);
-  hex_grid[3][6].draw_thicket();
   hex_grid[3][6].draw_gnome_for_player(2);
-  hex_grid[4][5].draw_thicket();
   hex_grid[4][5].draw_gnome_for_player(2);
 }
 
@@ -41,8 +44,8 @@ function mouseClicked() {
       }
       hex_grid[q][y].draw_select();
       prev_tile = hex_grid[q][y];
-      prev_tile_coords = [q, y];
-    } else if (prev_tile && prev_tile.has_gnome && neighbors(prev_tile_coords[0], prev_tile_coords[1], q, y)) {
+      prev_tile_coords = [q, y, r];
+    } else if (prev_tile && prev_tile.has_gnome && PLACEHOLDER) {
       prev_tile.has_gnome = false;
       prev_tile.draw();
       prev_tile = undefined;
@@ -58,8 +61,8 @@ function mouseClicked() {
 function cartesian_to_hex(in_x, in_y) {
   let x = in_x - width / 2;
   let y = in_y - height / 2;
-  let q_fractional = (2/3 * x) / DIMENSIONS.circumradius;
-  let r_fractional = (-1/3 * x + sqrt(3)/3 * y) / DIMENSIONS.circumradius;
+  let q_fractional = (2/3 * x) / dimensions.circumradius;
+  let r_fractional = (-1/3 * x + sqrt(3)/3 * y) / dimensions.circumradius;
   let s_fractional = -q_fractional - r_fractional;
   let q_rounded = round(q_fractional);
   let r_rounded = round(r_fractional);
@@ -87,13 +90,13 @@ function draw_board() {
     hex_grid[col_index] = [];
     
     // Given each length, iterate down q axis
-    const col_offset = DIMENSIONS.board_vert_offset + (7 - q_length) * DIMENSIONS.inradius;
+    const col_offset = dimensions.board_vert_offset + (7 - q_length) * dimensions.inradius;
     for (let q = 0; q < q_length; q++) {
 
-      const center_x = width / 2 + (7 - q_length) * q_grow_amt * DIMENSIONS.circumradius * 2 * 0.75;
-      const center_y = col_offset + DIMENSIONS.inradius * q * 2;
+      const center_x = width / 2 + (7 - q_length) * q_grow_amt * dimensions.circumradius * 2 * 0.75;
+      const center_y = col_offset + dimensions.inradius * q * 2;
 
-      hex_grid[col_index][q] = new HexTile(center_x, center_y, DIMENSIONS.circumradius / DIMENSIONS.HEX_RADIUS_MAGIC_NUMBER * 1.5);
+      hex_grid[col_index][q] = new HexTile(center_x, center_y, dimensions.circumradius / dimensions.HEX_RADIUS_MAGIC_NUMBER * 1.5);
       hex_grid[col_index][q].draw();
     }
 
