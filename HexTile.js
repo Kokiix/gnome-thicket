@@ -21,8 +21,8 @@ class HexTile {
     }
 
     draw_hover() {this.draw(this.hover_border_color, this.hover_fill_color);}
-    draw_select() {
-        this.draw(this.select_border_color, this.fill_color);
+    draw_select(color = this.select_border_color) {
+        this.draw(color, this.fill_color);
         this.is_hilighted = true;
     }
     draw(stroke_color = this.stroke_color, fill_color = this.fill_color) {

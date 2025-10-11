@@ -1,7 +1,6 @@
 const dimensions = {"HEX_RADIUS_MAGIC_NUMBER": 20};
 const hex_grid = [];
 let highlighted_tiles = [];
-let highlighted_tile_coords = [];
 let current_player = 1;
 
 function setup() {
@@ -43,11 +42,10 @@ function mouseClicked() {
     let chosen_tile = hex_grid[q][y];
     // Select gnome
     if (hex_grid[q][y].has_gnome && chosen_tile.gnome_owner == current_player) {
-      clear_highlighted()
+      clear_highlighted();
       hex_grid[q][y].draw_select();
       highlighted_tiles.push(chosen_tile);
-      highlighted_tile_coords.push([q, y, r]);
-      highlight_bushes();
+      highlight_move_options(q, y);
       return;
     // Select location to move to
     } else if (chosen_tile.is_hilighted) {
@@ -55,9 +53,8 @@ function mouseClicked() {
       hex_grid[q][y].draw_gnome_for_player(current_player);
       current_player = current_player == 1 ? 2 : 1;
     }
+    clear_highlighted();
   }
-  
-  clear_highlighted();
 }
 
 function draw_board() {
@@ -89,8 +86,46 @@ function draw_board() {
   }
 }
 
-function highlight_bushes() {
-  
+function highlight_move_options(q, y) {
+  let draw_on_top = [];
+  const highlightTile = (tile) => {
+    if (tile && !tile.has_gnome) {
+      highlighted_tiles.push(tile);
+      if (!tile.has_thicket) {
+        draw_on_top.push(tile);
+        return false;
+      } else {
+        tile.draw_select();
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const traverseAndHighlight = (start, end, step, incrementY) => {
+    let this_y = y;
+    for (let i = start; i !== end; i += step) {
+      this_y += incrementY(i);
+      if (!highlightTile(hex_grid[i][this_y])) {
+        break;
+      }
+    }
+  };
+
+  // Highlight vertical bushes
+  traverseAndHighlight(q, -1, 0, y => -1);
+  traverseAndHighlight(q, -1, 0, y => +1);
+
+  // Highlight diagonal bushes
+  traverseAndHighlight(q - 1, -1, -1, y => ((y < 3) ? -1 : 0));
+  traverseAndHighlight(q - 1, -1, -1, y => ((y >= 3) ? 1 : 0));
+
+  traverseAndHighlight(q + 1, hex_grid.length, 1, y => (y > 3) ? -1 : 0);
+  traverseAndHighlight(q + 1, hex_grid.length, 1, y => (y <= 3) ? 1 : 0);
+
+  for (let i in draw_on_top) {
+    draw_on_top[i].draw_select([255, 0, 0]);
+  }
 }
 
 function clear_highlighted() {
