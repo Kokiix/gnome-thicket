@@ -1,40 +1,37 @@
 class HexTile {
     static p1_color = [178, 91, 84];
     static p2_color = [87, 163, 201];
-    constructor(x, y, stroke_weight) {
+
+
+        // this.hover_border_color = this.brighten(this.stroke_color, 10);
+        // this.hover_fill_color = this.brighten(this.fill_color, 10);
+        // this.select_border_color = [255, 255, 255];
+
+
+    constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.is_hilighted = false;
+        this.is_highlighted = false;
         this.has_thicket = false;
         this.gnome = undefined;
-
-        this.weight = stroke_weight;
-        this.stroke_color = [51, 102, 68];
-        this.fill_color = [87, 135, 75];
-
-        this.thicket_color = [40, 83, 55];
-
-        this.hover_border_color = this.brighten(this.stroke_color, 10);
-        this.hover_fill_color = this.brighten(this.fill_color, 10);
-        this.select_border_color = [255, 255, 255];
     }
 
     draw_hover() {this.draw(this.hover_border_color, this.hover_fill_color);}
     draw_select(color = this.select_border_color) {
         this.draw(color, this.fill_color);
-        this.is_hilighted = true;
+        this.is_highlighted = true;
     }
-    draw(stroke_color = this.stroke_color, fill_color = this.fill_color) {
-        this.is_hilighted = false;
-        strokeWeight(this.weight);
+    draw(stroke_color = CONFIG.TILE_STROKE, fill_color = CONFIG.TILE_FILL) {
+        this.is_highlighted = false;
+        strokeWeight(CONFIG.TILE_STROKE_WEIGHT);
         stroke(stroke_color);
         fill(fill_color);
 
         beginShape();
         for (let angle = 0; angle < 6.28; angle += PI / 3) {
             vertex(
-            round(this.x + dimensions.circumradius * cos(angle)), 
-            round(this.y + dimensions.circumradius * sin(angle)));
+            round(this.x + CONFIG.circumradius * cos(angle)), 
+            round(this.y + CONFIG.circumradius * sin(angle)));
         }
         endShape(CLOSE);
 
@@ -44,6 +41,14 @@ class HexTile {
         if (this.gnome) {
             this.draw_gnome_for_player();
         }
+    }
+
+    draw_thicket() {
+        this.has_thicket = true;
+        fill(CONFIG.THICKET_FILL);
+        stroke(CONFIG.TILE_STROKE);
+        strokeWeight(CONFIG.TILE_STROKE_WEIGHT);
+        circle(this.x, this.y, CONFIG.circumradius);
     }
 
     draw_gnome_for_player(player_n) {
@@ -69,14 +74,6 @@ class HexTile {
                 this.x, this.y + disp,
                 this.x + disp, this.y);
         }
-    }
-
-    draw_thicket() {
-        this.has_thicket = true;
-        fill(this.thicket_color);
-        strokeWeight(this.weight * 2);
-        stroke(this.stroke_color);
-        circle(this.x, this.y, this.weight * 15);
     }
 
     brighten(color, brighten_amt) {
