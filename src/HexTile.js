@@ -1,19 +1,18 @@
 class HexTile {
+    static p1_color = [178, 91, 84];
+    static p2_color = [87, 163, 201];
     constructor(x, y, stroke_weight) {
         this.x = x;
         this.y = y;
         this.is_hilighted = false;
         this.has_thicket = false;
-        this.has_gnome = false;
-        this.gnome_owner = 0;
+        this.gnome = undefined;
 
         this.weight = stroke_weight;
         this.stroke_color = [51, 102, 68];
         this.fill_color = [87, 135, 75];
 
         this.thicket_color = [40, 83, 55];
-        this.p1_color = [178, 91, 84];
-        this.p2_color = [87, 163, 201];
 
         this.hover_border_color = this.brighten(this.stroke_color, 10);
         this.hover_fill_color = this.brighten(this.fill_color, 10);
@@ -42,25 +41,34 @@ class HexTile {
         if (this.has_thicket) {
             this.draw_thicket();
         }
-        if (this.has_gnome) {
-            this.draw_gnome_for_player(this.gnome_owner);
+        if (this.gnome) {
+            this.draw_gnome_for_player();
         }
     }
 
     draw_gnome_for_player(player_n) {
-        this.has_gnome = true;
-        this.gnome_owner = player_n;
+        if (!this.gnome) {this.gnome = new Gnome(player_n);}
+        else {player_n = this.gnome.owner;}
         strokeWeight(this.weight);
+        strokeJoin(BEVEL);
         let player_color;
-        if (player_n == 1) {player_color = this.p1_color;}
-        else if (player_n == 2) {player_color = this.p2_color;}
+        if (player_n == 1) {player_color = HexTile.p1_color;}
+        else if (player_n == 2) {player_color = HexTile.p2_color;}
         fill(player_color);
-        strokeWeight(0);
-        let disp = this.weight * 5;
-        quad(this.x, this.y - disp,
-            this.x - disp, this.y,
-            this.x, this.y + disp,
-            this.x + disp, this.y);
+        stroke(player_color);
+        let disp = this.weight * 4.5;
+        if (this.gnome.type) {
+            triangle(
+                this.x - disp, this.y + disp,
+                this.x + disp, this.y + disp,
+                this.x, this.y - disp
+            );
+        } else {
+            quad(this.x, this.y - disp,
+                this.x - disp, this.y,
+                this.x, this.y + disp,
+                this.x + disp, this.y);
+        }
     }
 
     draw_thicket() {
