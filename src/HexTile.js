@@ -16,9 +16,9 @@ class HexTile {
         this.gnome = undefined;
     }
 
-    draw_hover() {this.draw(this.hover_border_color, this.hover_fill_color);}
-    draw_select(color = this.select_border_color) {
-        this.draw(color, this.fill_color);
+    // draw_hover() {this.draw(this.hover_border_color, this.hover_fill_color);}
+    draw_select(color = "white") {
+        this.draw(color);
         this.is_highlighted = true;
     }
     draw(stroke_color = CONFIG.TILE_STROKE, fill_color = CONFIG.TILE_FILL) {
@@ -48,31 +48,31 @@ class HexTile {
         fill(CONFIG.THICKET_FILL);
         stroke(CONFIG.TILE_STROKE);
         strokeWeight(CONFIG.TILE_STROKE_WEIGHT);
-        circle(this.x, this.y, CONFIG.circumradius);
+        circle(this.x, this.y, CONFIG.thicket_diameter);
     }
 
     draw_gnome_for_player(player_n) {
-        if (!this.gnome) {this.gnome = new Gnome(player_n);}
-        else {player_n = this.gnome.owner;}
+        let player_color;
+
+        if (this.gnome) {player_n = this.gnome.owner;}
+        else {this.gnome = new Gnome(player_n);}
         strokeWeight(this.weight);
         strokeJoin(BEVEL);
-        let player_color;
         if (player_n == 1) {player_color = HexTile.p1_color;}
         else if (player_n == 2) {player_color = HexTile.p2_color;}
         fill(player_color);
         stroke(player_color);
-        let disp = this.weight * 4.5;
         if (this.gnome.type) {
             triangle(
-                this.x - disp, this.y + disp,
-                this.x + disp, this.y + disp,
-                this.x, this.y - disp
+                this.x - CONFIG.gnome_size, this.y + CONFIG.gnome_size,
+                this.x + CONFIG.gnome_size, this.y + CONFIG.gnome_size,
+                this.x, this.y - CONFIG.gnome_size
             );
         } else {
-            quad(this.x, this.y - disp,
-                this.x - disp, this.y,
-                this.x, this.y + disp,
-                this.x + disp, this.y);
+            quad(this.x, this.y - CONFIG.gnome_size,
+                this.x - CONFIG.gnome_size, this.y,
+                this.x, this.y + CONFIG.gnome_size,
+                this.x + CONFIG.gnome_size, this.y);
         }
     }
 

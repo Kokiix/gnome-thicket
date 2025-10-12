@@ -16,4 +16,6 @@ function init_config(width) {
 
     CONFIG.circumradius = width / CONFIG.WIDTH_CIRCUMRADIUS_FACTOR;
     CONFIG.inradius = CONFIG.circumradius * sqrt(3) / 2;
+    CONFIG.thicket_diameter = CONFIG.circumradius * 1.25;
+    CONFIG.gnome_size = CONFIG.thicket_diameter * 0.5 * 0.75;
 }

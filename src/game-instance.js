@@ -1,65 +1,74 @@
 class Game {
     constructor() {
-        this.hex_grid = [];
+        this.board = new Board();
+        this.class_selection_active = false;
+        this.current_player = 0;
     }
 
-    init_board(height, width) {
-        this.init_tiles(height, width);
 
-        // Draw thickets on top and bottom border
-        for (let i = 0; i < this.hex_grid.length; i++) {
-            this.hex_grid[i][0].draw_thicket();
-            this.hex_grid[i][this.hex_grid[i].length - 1].draw_thicket();
-        }
+    handle_board_click() {
+        let [q, r] = cartesian_to_hex(mouseX, mouseY);
+        q = 6 - (q + 3); // Add so that 0 is at center; subtract from n bc cols are stored RTL
+        let y = r + (q < 4 ? 3 : 6 - q); // And convert r to y because tiles are stored as such
 
-        // Thickets sticking out of center row
-        this.hex_grid[3][1].draw_thicket();
-        this.hex_grid[3][5].draw_thicket();
-
-        this.hex_grid[2][0].draw_gnome_for_player(1);
-        this.hex_grid[3][0].draw_gnome_for_player(1);
-        this.hex_grid[4][0].draw_gnome_for_player(1);
-        this.hex_grid[2][5].draw_gnome_for_player(2);
-        this.hex_grid[3][6].draw_gnome_for_player(2);
-        this.hex_grid[4][5].draw_gnome_for_player(2);
-    }
-
-    init_tiles(height, width) {
-        const board_height = CONFIG.inradius * CONFIG.CENTER_N_TILES * 2;
-        const center_col_start_y = (height - board_height) / 2 + CONFIG.inradius;
-        // Using axial coordinates: https://www.redblobgames.com/grids/hexagons/#coordinates-axial
-        // The number of tiles in col loop from 4 to 7 to 4
-        let col_index = 0;
-        let col_grow_direction = 1;
-        for (let tiles_in_col = CONFIG.EDGE_N_TILES; 
-            tiles_in_col <= CONFIG.CENTER_N_TILES && tiles_in_col >= CONFIG.EDGE_N_TILES; 
-            tiles_in_col += col_grow_direction) {
-
-            this.hex_grid[col_index] = [];
-            
-            const tile_diff_from_center = CONFIG.CENTER_N_TILES - tiles_in_col
-            // Generate tiles top to bottom
-            const col_start_y = center_col_start_y + CONFIG.inradius * tile_diff_from_center;
-            const x = width / 2 + (tile_diff_from_center * col_grow_direction
-             * CONFIG.circumradius * 1.5); // Distance from 1 hex to another is circ * 1.5
-            for (let tile_y = 0; tile_y < tiles_in_col; tile_y++) {
-                const y = col_start_y + CONFIG.inradius * tile_y * 2
-                this.hex_grid[col_index][tile_y] = new HexTile(x, y);
-                this.hex_grid[col_index][tile_y].draw();
+        if (this.board.hex_grid[q] && this.board.hex_grid[q][y]) {
+            let chosen_tile = this.board.hex_grid[q][y];
+            // Select gnome
+            if (this.board.hex_grid[q][y].gnome && chosen_tile.gnome.owner == this.current_player) {
+                this.board.clear_highlighted();
+                this.board.hex_grid[q][y].draw_select();
+                highlighted_tiles.push(chosen_tile);
+                if (chosen_tile.gnome.type) {
+                    this.board.highlight_revealed_moves(q, y);
+                } else {
+                    this.board.highlight_hidden_moves(q, y);
+                }
+                return;
+            // Select location to move to
+            } else if (chosen_tile.is_highlighted) {
+                if (chosen_tile.has_thicket) {
+                    if (highlighted_tiles[0].gnome.type) {
+                        // unreveal gnome
+                    } else {
+                        this.board.hex_grid[q][y].gnome = highlighted_tiles[0].gnome
+                        this.board.hex_grid[q][y].draw_gnome_for_player();
+                        this.current_player = this.current_player == 1 ? 2 : 1;
+                    }
+                } else {
+                    if (highlighted_tiles[0].gnome.type) {
+                        this.board.hex_grid[q][y].gnome = highlighted_tiles[0].gnome
+                        this.board.hex_grid[q][y].draw_gnome_for_player();
+                        this.current_player = this.current_player == 1 ? 2 : 1;
+                    } else {
+                        highlighted_tiles[0].gnome = undefined;
+                        this.board.clear_highlighted();
+                        select_gnome_class(chosen_tile);
+                        highlighted_tiles.push(chosen_tile);
+                        return;
+                    }
+                }
+                highlighted_tiles[0].gnome = undefined;
             }
-
-            col_index += 1;
-            if (tiles_in_col == 7) {col_grow_direction = -1;}
+            this.board.clear_highlighted();
         }
     }
 
-    redraw_tiles() {
-        clear();
-        background('black');
-        for (let q in hex_grid) {
-            for (let y in hex_grid[q]) {
-                hex_grid[q][y].draw();
-            }
+    handle_class_sel_click() {
+        let margin_size = (width - board_edge - rect_width) / 2;
+        if (mouseX > board_edge + margin_size && mouseX < width - margin_size) {
+            if (mouseY > rect_top && mouseY < rect_top + rect_height/3) {
+                highlighted_tiles[0].gnome = new Gnome(this.current_player, "gardener");
+            } else if (mouseY > rect_top + rect_height/3 && mouseY < rect_top + rect_height * 2/3) {
+                highlighted_tiles[0].gnome = new Gnome(this.current_player, "ruffian");
+            } else if (mouseY > rect_top + rect_height * 2/3 && mouseY < rect_top + rect_height) {
+                highlighted_tiles[0].gnome = new Gnome(this.current_player, "salt");
+            } else {return;}
+
+            reset_canvas();
+            highlighted_tiles[0].draw();
+            highlighted_tiles = [];
+            this.current_player = this.current_player == 1 ? 2 : 1;
+            selecting_class = false;
         }
     }
 }
