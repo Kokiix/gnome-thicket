@@ -224,20 +224,29 @@ function highlight_hidden_moves(init_q, init_y) {
 }
 
 function highlight_revealed_moves(q, y) {
+  let draw_on_top = [];
   const select = (tile) => {
     if (tile && !tile.gnome) {
       highlighted_tiles.push(tile);
-      tile.draw_select();
+      if (tile.has_thicket) {
+        draw_on_top.push(tile);
+      } else {
+        tile.draw_select();
+      }
     }
   };
   select(hex_grid[q][y + 1]);
   select(hex_grid[q][y - 1]);
 
-  select(hex_grid[q - 1][y + (q < 3) ? -1 : 0]);
-  select(hex_grid[q - 1][y + (q >= 3) ? 1 : 0]);
-
-  select(hex_grid[q - 1][y + (q > 3) ? -1 : 0]);
-  select(hex_grid[q - 1][y + (q <= 3) ? 1 : 0]);
+  q -= 1;
+  select(hex_grid[q][y + ((q < 3) ? -1 : 0)]);
+  select(hex_grid[q][y + ((q >= 3) ? 1 : 0)]);
+  q += 2;
+  select(hex_grid[q][y + ((q > 3) ? -1 : 0)]);
+  select(hex_grid[q][y + ((q <= 3) ? 1 : 0)]);
+  for (let i in draw_on_top) {
+    draw_on_top[i].draw_select([255, 0, 0]);
+  }
 }
 
 function clear_highlighted() {
