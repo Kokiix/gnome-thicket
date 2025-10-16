@@ -37,9 +37,10 @@ function handle_board_click() {
                 clear_highlighted();
                 highlighted_tiles.push(chosen_tile);
                 using_ability = true;
-                hex_grid[q][y].draw_select(CONFIG.ABILITY_TILE);
-                if (hex_grid[q][y].gnome.type == "gardener") {
+                if (chosen_tile.gnome.type == "gardener") {
                     highlight_revealed_moves(q, y, t => !t.has_thicket, t => false);
+                } else if (chosen_tile.gnome.type == "ruffian") {
+                    highlight_revealed_moves(q, y, t => (t.gnome && t.gnome.type && t.gnome.owner != current_player), t => false);
                 }
             } else {
                 clear_highlighted();
@@ -57,8 +58,15 @@ function handle_board_click() {
             if (using_ability) {
                 if (highlighted_tiles[0].gnome.type == "gardener") {
                     chosen_tile.has_thicket = true;
-                    chosen_tile.draw();
-                }    
+                } if (highlighted_tiles[0].gnome.type == "ruffian") {
+                    chosen_tile.gnome = undefined;
+                    for (let n in revealed_gnomes[current_player]) {
+                        if (revealed_gnomes[current_player][n] == highlighted_tiles[0].gnome.n_stripes) {
+                            revealed_gnomes[current_player].splice(n, 1); break;
+                        }
+                    }
+                }
+                chosen_tile.draw();
                 using_ability = false;
                 action_count -= 1;
                 if (action_count <= 0) {
@@ -264,6 +272,7 @@ function clear_highlighted() {
     for (let i = 0; i < highlighted_tiles.length; i++) {
         highlighted_tiles[i].draw();
     }
+    using_ability = false;
     highlighted_tiles = [];
 }
 
