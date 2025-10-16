@@ -1,13 +1,4 @@
 class HexTile {
-    static p1_color = [178, 91, 84];
-    static p2_color = [87, 163, 201];
-
-
-        // this.hover_border_color = this.brighten(this.stroke_color, 10);
-        // this.hover_fill_color = this.brighten(this.fill_color, 10);
-        // this.select_border_color = [255, 255, 255];
-
-
     constructor(x, y) {
         this.x = x;
         this.y = y;
@@ -58,8 +49,8 @@ class HexTile {
         else {this.gnome = new Gnome(player_n);}
         strokeWeight(this.weight);
         strokeJoin(BEVEL);
-        if (player_n == 1) {player_color = HexTile.p1_color;}
-        else if (player_n == 2) {player_color = HexTile.p2_color;}
+        if (player_n == 1) {player_color = CONFIG.P1_COLOR;}
+        else if (player_n == 2) {player_color = CONFIG.P2_COLOR;}
         fill(player_color);
         stroke(player_color);
         if (this.gnome.type) {
@@ -68,19 +59,31 @@ class HexTile {
                 this.x + CONFIG.gnome_size, this.y + CONFIG.gnome_size,
                 this.x, this.y - CONFIG.gnome_size
             );
+
+            push();
+            beginClip();
+            for (let i = 1; i < 4; i++) {
+                triangle(
+                    this.x - CONFIG.gnome_size, this.y + CONFIG.gnome_size,
+                    this.x + CONFIG.gnome_size, this.y + CONFIG.gnome_size,
+                    this.x, this.y - CONFIG.gnome_size
+                );
+            }
+            endClip()
+            let stripe_weight = CONFIG.gnome_size / 5;
+            strokeWeight(stripe_weight);
+            stroke("white");
+            let loop_cap = -3 + 2 * this.gnome.n_stripes();
+            for (let i = -1; i <= loop_cap; i += 2) {
+                line(this.x - CONFIG.gnome_size, this.y + stripe_weight * i,
+                this.x + CONFIG.gnome_size, this.y + stripe_weight * i);
+            }
+            pop();
         } else {
             quad(this.x, this.y - CONFIG.gnome_size,
                 this.x - CONFIG.gnome_size, this.y,
                 this.x, this.y + CONFIG.gnome_size,
                 this.x + CONFIG.gnome_size, this.y);
         }
-    }
-
-    brighten(color, brighten_amt) {
-        let new_color = color;
-        for (let i = 0; i < 3; i++) {
-            new_color[i] += brighten_amt
-        }
-        return new_color;
     }
 }

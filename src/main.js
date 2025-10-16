@@ -1,8 +1,3 @@
-let rect_height;
-let rect_width;
-let board_edge;
-let rect_top;
-
 let hex_grid = [];
 let highlighted_tiles = [];
 let class_selection_active = false;
@@ -11,7 +6,7 @@ let current_player = 1;
 function setup() {
   createCanvas(windowWidth, windowHeight);
   background("black");
-  init_config(width);
+  init_config(width, height);
   init_board(height, width);
 }
 
@@ -74,13 +69,13 @@ function handle_board_click() {
 }
 
 function handle_class_sel_click() {
-    let margin_size = (width - board_edge - rect_width) / 2;
-    if (mouseX > board_edge + margin_size && mouseX < width - margin_size) {
-        if (mouseY > rect_top && mouseY < rect_top + rect_height/3) {
+    let margin_size = (width - CONFIG.board_right_border - CONFIG.class_sel.WIDTH) / 2;
+    if (mouseX > CONFIG.board_right_border + margin_size && mouseX < width - margin_size) {
+        if (mouseY > CONFIG.class_sel.top_border && mouseY < CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT/3) {
             highlighted_tiles[0].gnome = new Gnome(current_player, "gardener");
-        } else if (mouseY > rect_top + rect_height/3 && mouseY < rect_top + rect_height * 2/3) {
+        } else if (mouseY > CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT/3 && mouseY < CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT * 2/3) {
             highlighted_tiles[0].gnome = new Gnome(current_player, "ruffian");
-        } else if (mouseY > rect_top + rect_height * 2/3 && mouseY < rect_top + rect_height) {
+        } else if (mouseY > CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT * 2/3 && mouseY < CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT) {
             highlighted_tiles[0].gnome = new Gnome(current_player, "salt");
         } else {return;}
 
@@ -88,7 +83,7 @@ function handle_class_sel_click() {
         highlighted_tiles[0].draw();
         highlighted_tiles = [];
         current_player = current_player == 1 ? 2 : 1;
-        selecting_class = false;
+        class_selection_active = false;
     }
 }
 
@@ -142,7 +137,7 @@ function init_tiles(height, width) {
     }
 }
 
-function redraw() {
+function reset_canvas() {
     clear();
     background('black');
     for (let q in hex_grid) {
@@ -228,54 +223,61 @@ function clear_highlighted() {
     highlighted_tiles = [];
 }
 
-function  select_gnome_class() {
-    selecting_class = true;
+function select_gnome_class() {
+
+    let vert_hat_margin = CONFIG.class_sel.HEIGHT / 20;
+    let horiz_hat_margin = CONFIG.class_sel.WIDTH / 5;
+    let center = CONFIG.class_sel.center;
+    let top = CONFIG.class_sel.top_border;
+    let rect_height = CONFIG.class_sel.HEIGHT;
+    let rect_width = CONFIG.class_sel.WIDTH;
+    let edge = CONFIG.board_right_border;
+
+    class_selection_active = true;
+    // Cover screen with blur grey rect
     fill(200, 200, 200, 75);
     strokeWeight(0);
     rect(0, 0, width, height);
 
+    // Draw another grey rect to hold class select
     stroke(180, 180, 180);
     strokeWeight(5);
     fill(200, 200, 200);
-    rect_height = height * 0.75;
-    rect_width = dimensions.circumradius * 3.5;
-    board_edge = width / 2 + 1.5 * dimensions.circumradius * 3 + dimensions.circumradius;
-    rect_top = height / 2 - rect_height / 2
-    rect((board_edge + width) / 2 - 0.5 * rect_width, rect_top, rect_width, rect_height);
+
+    rect(center - 0.5 * CONFIG.class_sel.WIDTH, 
+        top, CONFIG.class_sel.WIDTH, CONFIG.class_sel.HEIGHT);
 
     strokeJoin(BEVEL);
     if (current_player == 1) {
-        stroke(HexTile.p1_color);
-        fill(HexTile.p1_color);
+        stroke(CONFIG.P1_COLOR);
+        fill(CONFIG.P1_COLOR);
     } else {
-        stroke(HexTile.p2_color);
-        fill(HexTile.p2_color); 
+        stroke(CONFIG.P2_COLOR);
+        fill(CONFIG.P2_COLOR); 
     }
 
-    let vert_hat_margin = rect_width / 10;
-    let horiz_hat_margin = rect_width / 5;
     for (let i = 1; i < 4; i++) {
-        triangle((board_edge + width) / 2, rect_top + (i - 1)/3 * rect_height + vert_hat_margin,
-        (board_edge + width) / 2 - rect_width/2 + horiz_hat_margin, rect_top + i/3 * rect_height - vert_hat_margin,
-        (board_edge + width) / 2 + rect_width/2 - horiz_hat_margin, rect_top + i/3 * rect_height - vert_hat_margin);
+        triangle(center, top + (i - 1)/3 * rect_height + vert_hat_margin,
+        center - rect_width/2 + horiz_hat_margin, top + i/3 * rect_height - vert_hat_margin,
+        center + rect_width/2 - horiz_hat_margin, top + i/3 * rect_height - vert_hat_margin);
     }
     push();
     beginClip();
     for (let i = 1; i < 4; i++) {
-        triangle((board_edge + width) / 2, rect_top + (i - 1)/3 * rect_height + vert_hat_margin,
-        (board_edge + width) / 2 - rect_width/2 + horiz_hat_margin, rect_top + i/3 * rect_height - vert_hat_margin,
-        (board_edge + width) / 2 + rect_width/2 - horiz_hat_margin, rect_top + i/3 * rect_height - vert_hat_margin);
+        triangle(center, top + (i - 1)/3 * rect_height + vert_hat_margin,
+        center - rect_width/2 + horiz_hat_margin, top + i/3 * rect_height - vert_hat_margin,
+        center + rect_width/2 - horiz_hat_margin, top + i/3 * rect_height - vert_hat_margin);
     }
     endClip()
-    let stripe_weight = rect_width / 12;
+    let stripe_weight = CONFIG.class_sel.WIDTH / 12;
     strokeWeight(stripe_weight);
     stroke("white");
     for (let i = 1; i < 4; i++) {
-        line(board_edge, rect_top + i/3 * rect_height - vert_hat_margin - stripe_weight,
-        width, rect_top + i/3 * rect_height - vert_hat_margin - stripe_weight);
+        line(edge, top + i/3 * rect_height - vert_hat_margin - stripe_weight,
+        width, top + i/3 * rect_height - vert_hat_margin - stripe_weight);
         for (let j = 2; j <= i; j++) {
-        line(board_edge, rect_top + i/3 * rect_height - vert_hat_margin - (stripe_weight * j * 1.5),
-            width, rect_top + i/3 * rect_height - vert_hat_margin - (stripe_weight * j * 1.5));
+        line(edge, top + i/3 * rect_height - vert_hat_margin - (stripe_weight * j * 1.5),
+            width, top + i/3 * rect_height - vert_hat_margin - (stripe_weight * j * 1.5));
         }
     }
     pop();
