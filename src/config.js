@@ -19,7 +19,7 @@ function init_config(width, height) {
     };
 
     if (height > width) {
-        CONFIG.circumradius = 0.07 * height;
+        CONFIG.circumradius = 0.04 * height;
     } else {
         CONFIG.circumradius = 0.05 * width;
     }
