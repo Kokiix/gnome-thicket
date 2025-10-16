@@ -2,7 +2,6 @@ let CONFIG = {};
 
 function init_config(width, height) {
     CONFIG = {
-    WIDTH_CIRCUMRADIUS_FACTOR: 20,
     CENTER_N_TILES: 7,
     EDGE_N_TILES: 4,
 
@@ -19,7 +18,11 @@ function init_config(width, height) {
     ABILITY_TILE: color(129, 34, 141),
     };
 
-    CONFIG.circumradius = width / CONFIG.WIDTH_CIRCUMRADIUS_FACTOR;
+    if (height > width) {
+        CONFIG.circumradius = 0.07 * height;
+    } else {
+        CONFIG.circumradius = 0.05 * width;
+    }
     CONFIG.inradius = CONFIG.circumradius * sqrt(3) / 2;
     CONFIG.thicket_diameter = CONFIG.circumradius * 1.25;
     CONFIG.gnome_size = CONFIG.thicket_diameter * 0.5 * 0.75;
