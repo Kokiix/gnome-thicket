@@ -58,13 +58,12 @@ function handle_board_click() {
             if (using_ability) {
                 if (highlighted_tiles[0].gnome.type == "gardener") {
                     chosen_tile.has_thicket = true;
-                } if (highlighted_tiles[0].gnome.type == "ruffian") {
-                    chosen_tile.gnome = undefined;
-                    for (let n in revealed_gnomes[current_player]) {
-                        if (revealed_gnomes[current_player][n] == highlighted_tiles[0].gnome.n_stripes) {
-                            revealed_gnomes[current_player].splice(n, 1); break;
-                        }
+                    if (chosen_tile.gnome) {
+                        hide_gnome(chosen_tile);
                     }
+                } if (highlighted_tiles[0].gnome.type == "ruffian") {
+                    hide_gnome(chosen_tile);
+                    chosen_tile.gnome = undefined;
                 }
                 chosen_tile.draw();
                 using_ability = false;
@@ -77,12 +76,7 @@ function handle_board_click() {
                 return;
             } else if (chosen_tile.has_thicket) {
                 if (highlighted_tiles[0].gnome.type) {
-                    for (let n in revealed_gnomes[current_player]) {
-                        if (revealed_gnomes[current_player][n] == highlighted_tiles[0].gnome.n_stripes) {
-                            revealed_gnomes[current_player].splice(n, 1); break;
-                        }
-                    }
-                    highlighted_tiles[0].gnome.type = undefined;
+                    hide_gnome(highlighted_tiles[0]);
                 }
                 hex_grid[q][y].gnome = highlighted_tiles[0].gnome
                 hex_grid[q][y].draw_gnome_for_player();
@@ -331,13 +325,22 @@ function select_gnome_class() {
     stroke("white");
     for (let i = 1; i < 4; i++) {
         if (!(revealed_gnomes[current_player].includes(i))) {
-            line(edge, top + i/3 * rect_height - vert_hat_margin - stripe_weight,
+            line(0, top + i/3 * rect_height - vert_hat_margin - stripe_weight,
             width, top + i/3 * rect_height - vert_hat_margin - stripe_weight);
             for (let j = 2; j <= i; j++) {
-            line(edge, top + i/3 * rect_height - vert_hat_margin - (stripe_weight * j * 1.5),
+            line(0, top + i/3 * rect_height - vert_hat_margin - (stripe_weight * j * 1.5),
                 width, top + i/3 * rect_height - vert_hat_margin - (stripe_weight * j * 1.5));
             }
         }
     }
     pop();
+}
+
+function hide_gnome(tile) {
+    for (let n in revealed_gnomes[current_player]) {
+        if (revealed_gnomes[current_player][n] == tile.gnome.n_stripes) {
+            revealed_gnomes[current_player].splice(n, 1); break;
+        }
+    }
+    tile.gnome.type = undefined;
 }
