@@ -3,6 +3,8 @@ let highlighted_tiles = [];
 let class_selection_active = false;
 let current_player = 1;
 let revealed_gnomes = {1: [], 2: []}
+let action_count = 0;
+let using_ability = false;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -30,19 +32,42 @@ function handle_board_click() {
     if (hex_grid[q] && hex_grid[q][y]) {
         let chosen_tile = hex_grid[q][y];
         // Select gnome
-        if (hex_grid[q][y].gnome && chosen_tile.gnome.owner == current_player) {
-            clear_highlighted();
-            hex_grid[q][y].draw_select();
-            highlighted_tiles.push(chosen_tile);
-            if (chosen_tile.gnome.type) {
-                highlight_revealed_moves(q, y);
+        if (chosen_tile.gnome && chosen_tile.gnome.owner == current_player) {
+            if (highlighted_tiles[0] && highlighted_tiles[0].gnome.type && highlighted_tiles[0].gnome.type == chosen_tile.gnome.type) {
+                clear_highlighted();
+                highlighted_tiles.push(chosen_tile);
+                using_ability = true;
+                hex_grid[q][y].draw_select(CONFIG.ABILITY_TILE);
+                if (hex_grid[q][y].gnome.type == "gardener") {
+                    highlight_revealed_moves(q, y, t => !t.has_thicket, t => false);
+                }
             } else {
-                highlight_hidden_moves(q, y);
+                clear_highlighted();
+                highlighted_tiles.push(chosen_tile);
+                hex_grid[q][y].draw_select();
+                if (chosen_tile.gnome.type) {
+                    highlight_revealed_moves(q, y);
+                } else {
+                    highlight_hidden_moves(q, y);
+                }
             }
             return;
         // Select location to move to
         } else if (chosen_tile.is_highlighted) {
-            if (chosen_tile.has_thicket) {
+            if (using_ability) {
+                if (highlighted_tiles[0].gnome.type == "gardener") {
+                    chosen_tile.has_thicket = true;
+                    chosen_tile.draw();
+                }    
+                using_ability = false;
+                action_count -= 1;
+                if (action_count <= 0) {
+                    current_player = current_player == 1 ? 2 : 1;
+                    action_count += 2;
+                }
+                clear_highlighted();
+                return;
+            } else if (chosen_tile.has_thicket) {
                 if (highlighted_tiles[0].gnome.type) {
                     for (let n in revealed_gnomes[current_player]) {
                         if (revealed_gnomes[current_player][n] == highlighted_tiles[0].gnome.n_stripes) {
@@ -53,12 +78,10 @@ function handle_board_click() {
                 }
                 hex_grid[q][y].gnome = highlighted_tiles[0].gnome
                 hex_grid[q][y].draw_gnome_for_player();
-                current_player = current_player == 1 ? 2 : 1;
             } else {
                 if (highlighted_tiles[0].gnome.type) {
                     hex_grid[q][y].gnome = highlighted_tiles[0].gnome
                     hex_grid[q][y].draw_gnome_for_player();
-                    current_player = current_player == 1 ? 2 : 1;
                 } else {
                     highlighted_tiles[0].gnome = undefined;
                     clear_highlighted();
@@ -68,6 +91,11 @@ function handle_board_click() {
                 }
             }
             highlighted_tiles[0].gnome = undefined;
+            action_count -= 1;
+            if (action_count <= 0) {
+                current_player = current_player == 1 ? 2 : 1;
+                action_count += 2;
+            }
         }
         clear_highlighted();
     }
@@ -90,7 +118,11 @@ function handle_class_sel_click() {
         reset_canvas();
         highlighted_tiles[0].draw();
         highlighted_tiles = [];
-        current_player = current_player == 1 ? 2 : 1;
+        action_count -= 1;
+        if (action_count <= 0) {
+            current_player = current_player == 1 ? 2 : 1;
+            action_count += 2;
+        }
         class_selection_active = false;
     }
 }
@@ -198,15 +230,19 @@ function highlight_hidden_moves(init_q, init_y) {
     }
 }
 
-function highlight_revealed_moves(q, y) {
+function highlight_revealed_moves(q, y, draw_req = t => !t.gnome, highlight_req = t => t.has_thicket) {
     let draw_on_top = [];
     const select = (tile) => {
-        if (tile && !tile.gnome) {
+        if (tile && draw_req(tile)) {
         highlighted_tiles.push(tile);
-        if (tile.has_thicket) {
+        if (highlight_req(tile)) {
             draw_on_top.push(tile);
         } else {
-            tile.draw_select();
+            if (using_ability) {
+                tile.draw_select(CONFIG.ABILITY_TILE);
+            } else {
+                tile.draw_select();
+            }
         }
         }
     };
@@ -265,8 +301,6 @@ function select_gnome_class() {
     }
     let stripe_weight = CONFIG.class_sel.WIDTH / 12;
 
-    console.log(revealed_gnomes[current_player]);
-    console.log(1 in revealed_gnomes[current_player]);
     for (let i = 1; i < 4; i++) {
         if (!(revealed_gnomes[current_player].includes(i))) {
             triangle(center, top + (i - 1)/3 * rect_height + vert_hat_margin,

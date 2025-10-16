@@ -14,7 +14,9 @@ function init_config(width, height) {
     THICKET_FILL: color(40, 83, 55),
 
     P1_COLOR: color(178, 91, 84),
-    P2_COLOR: color(87, 163, 201)
+    P2_COLOR: color(87, 163, 201),
+
+    ABILITY_TILE: color(129, 34, 141),
     };
 
     CONFIG.circumradius = width / CONFIG.WIDTH_CIRCUMRADIUS_FACTOR;
