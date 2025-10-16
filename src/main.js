@@ -2,6 +2,7 @@ let hex_grid = [];
 let highlighted_tiles = [];
 let class_selection_active = false;
 let current_player = 1;
+let revealed_gnomes = {1: [], 2: []}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -43,12 +44,16 @@ function handle_board_click() {
         } else if (chosen_tile.is_highlighted) {
             if (chosen_tile.has_thicket) {
                 if (highlighted_tiles[0].gnome.type) {
-                    // unreveal gnome
-                } else {
-                    hex_grid[q][y].gnome = highlighted_tiles[0].gnome
-                    hex_grid[q][y].draw_gnome_for_player();
-                    current_player = current_player == 1 ? 2 : 1;
+                    for (let n in revealed_gnomes[current_player]) {
+                        if (revealed_gnomes[current_player][n] == highlighted_tiles[0].gnome.n_stripes) {
+                            revealed_gnomes[current_player].splice(n, 1); break;
+                        }
+                    }
+                    highlighted_tiles[0].gnome.type = undefined;
                 }
+                hex_grid[q][y].gnome = highlighted_tiles[0].gnome
+                hex_grid[q][y].draw_gnome_for_player();
+                current_player = current_player == 1 ? 2 : 1;
             } else {
                 if (highlighted_tiles[0].gnome.type) {
                     hex_grid[q][y].gnome = highlighted_tiles[0].gnome
@@ -73,10 +78,13 @@ function handle_class_sel_click() {
     if (mouseX > CONFIG.board_right_border + margin_size && mouseX < width - margin_size) {
         if (mouseY > CONFIG.class_sel.top_border && mouseY < CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT/3) {
             highlighted_tiles[0].gnome = new Gnome(current_player, "gardener");
+            revealed_gnomes[current_player].push(1);
         } else if (mouseY > CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT/3 && mouseY < CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT * 2/3) {
             highlighted_tiles[0].gnome = new Gnome(current_player, "ruffian");
+            revealed_gnomes[current_player].push(2);
         } else if (mouseY > CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT * 2/3 && mouseY < CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT) {
             highlighted_tiles[0].gnome = new Gnome(current_player, "salt");
+            revealed_gnomes[current_player].push(3);
         } else {return;}
 
         reset_canvas();
@@ -255,29 +263,37 @@ function select_gnome_class() {
         stroke(CONFIG.P2_COLOR);
         fill(CONFIG.P2_COLOR); 
     }
+    let stripe_weight = CONFIG.class_sel.WIDTH / 12;
 
+    console.log(revealed_gnomes[current_player]);
+    console.log(1 in revealed_gnomes[current_player]);
     for (let i = 1; i < 4; i++) {
-        triangle(center, top + (i - 1)/3 * rect_height + vert_hat_margin,
-        center - rect_width/2 + horiz_hat_margin, top + i/3 * rect_height - vert_hat_margin,
-        center + rect_width/2 - horiz_hat_margin, top + i/3 * rect_height - vert_hat_margin);
+        if (!(revealed_gnomes[current_player].includes(i))) {
+            triangle(center, top + (i - 1)/3 * rect_height + vert_hat_margin,
+            center - rect_width/2 + horiz_hat_margin, top + i/3 * rect_height - vert_hat_margin,
+            center + rect_width/2 - horiz_hat_margin, top + i/3 * rect_height - vert_hat_margin);
+        }
     }
     push();
     beginClip();
     for (let i = 1; i < 4; i++) {
-        triangle(center, top + (i - 1)/3 * rect_height + vert_hat_margin,
-        center - rect_width/2 + horiz_hat_margin, top + i/3 * rect_height - vert_hat_margin,
-        center + rect_width/2 - horiz_hat_margin, top + i/3 * rect_height - vert_hat_margin);
+        if (!(revealed_gnomes[current_player].includes(i))) {
+            triangle(center, top + (i - 1)/3 * rect_height + vert_hat_margin,
+            center - rect_width/2 + horiz_hat_margin, top + i/3 * rect_height - vert_hat_margin,
+            center + rect_width/2 - horiz_hat_margin, top + i/3 * rect_height - vert_hat_margin);
+        }
     }
     endClip()
-    let stripe_weight = CONFIG.class_sel.WIDTH / 12;
     strokeWeight(stripe_weight);
     stroke("white");
     for (let i = 1; i < 4; i++) {
-        line(edge, top + i/3 * rect_height - vert_hat_margin - stripe_weight,
-        width, top + i/3 * rect_height - vert_hat_margin - stripe_weight);
-        for (let j = 2; j <= i; j++) {
-        line(edge, top + i/3 * rect_height - vert_hat_margin - (stripe_weight * j * 1.5),
-            width, top + i/3 * rect_height - vert_hat_margin - (stripe_weight * j * 1.5));
+        if (!(revealed_gnomes[current_player].includes(i))) {
+            line(edge, top + i/3 * rect_height - vert_hat_margin - stripe_weight,
+            width, top + i/3 * rect_height - vert_hat_margin - stripe_weight);
+            for (let j = 2; j <= i; j++) {
+            line(edge, top + i/3 * rect_height - vert_hat_margin - (stripe_weight * j * 1.5),
+                width, top + i/3 * rect_height - vert_hat_margin - (stripe_weight * j * 1.5));
+            }
         }
     }
     pop();

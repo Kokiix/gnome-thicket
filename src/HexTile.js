@@ -73,7 +73,7 @@ class HexTile {
             let stripe_weight = CONFIG.gnome_size / 5;
             strokeWeight(stripe_weight);
             stroke("white");
-            let loop_cap = -3 + 2 * this.gnome.n_stripes();
+            let loop_cap = -3 + 2 * this.gnome.n_stripes;
             for (let i = -1; i <= loop_cap; i += 2) {
                 line(this.x - CONFIG.gnome_size, this.y + stripe_weight * i,
                 this.x + CONFIG.gnome_size, this.y + stripe_weight * i);
