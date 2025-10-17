@@ -11,4 +11,15 @@ class Gnome {
             this.n_stripes = 3;
         }
     }
+
+    update_type(type) {
+        this.type = type;
+        if (this.type == "gardener") {
+            this.n_stripes = 1;
+        } else if (this.type == "ruffian") {
+            this.n_stripes = 2;
+        } else {
+            this.n_stripes = 3;
+        }
+    }
 }

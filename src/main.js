@@ -337,9 +337,10 @@ function select_gnome_class() {
 }
 
 function hide_gnome(tile) {
-    for (let n in revealed_gnomes[current_player]) {
-        if (revealed_gnomes[current_player][n] == tile.gnome.n_stripes) {
-            revealed_gnomes[current_player].splice(n, 1); break;
+    let player = tile.gnome.owner
+    for (let n in revealed_gnomes[player]) {
+        if (revealed_gnomes[player][n] == tile.gnome.n_stripes) {
+            revealed_gnomes[player].splice(n, 1); break;
         }
     }
     tile.gnome.type = undefined;
