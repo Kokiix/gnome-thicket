@@ -4,6 +4,7 @@ class HexTile {
         this.y = y;
         this.is_highlighted = false;
         this.has_thicket = false;
+        this.is_barren = false;
         this.gnome = undefined;
     }
 
@@ -35,9 +36,15 @@ class HexTile {
     }
 
     draw_thicket() {
-        this.has_thicket = true;
-        fill(CONFIG.THICKET_FILL);
-        stroke(CONFIG.TILE_STROKE);
+        if (!this.is_barren) {
+            this.has_thicket = true;
+            fill(CONFIG.THICKET_FILL);
+            stroke(CONFIG.TILE_STROKE);
+
+        } else {
+            fill(210, 180, 140);
+            stroke(180, 160, 120);
+        }
         strokeWeight(CONFIG.TILE_STROKE_WEIGHT);
         circle(this.x, this.y, CONFIG.thicket_diameter);
     }
