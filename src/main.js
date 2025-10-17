@@ -6,6 +6,7 @@ let revealed_gnomes = {1: [], 2: []}
 let action_count = 0;
 let using_ability = false;
 
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
   background("black");
@@ -38,9 +39,11 @@ function handle_board_click() {
                 highlighted_tiles.push(chosen_tile);
                 using_ability = true;
                 if (chosen_tile.gnome.type == "gardener") {
-                    highlight_revealed_moves(q, y, t => !t.has_thicket, t => false);
+                    highlight_revealed_moves(q, y, t => (!t.has_thicket && !t.is_barren), t => false);
                 } else if (chosen_tile.gnome.type == "ruffian") {
                     highlight_revealed_moves(q, y, t => (t.gnome && t.gnome.type && t.gnome.owner != current_player), t => false);
+                } else {
+                    highlight_revealed_moves(q, y, t => (t.has_thicket), t => false);
                 }
             } else {
                 clear_highlighted();
@@ -61,9 +64,16 @@ function handle_board_click() {
                     if (chosen_tile.gnome) {
                         hide_gnome(chosen_tile);
                     }
-                } if (highlighted_tiles[0].gnome.type == "ruffian") {
+                } else if (highlighted_tiles[0].gnome.type == "ruffian") {
                     hide_gnome(chosen_tile);
                     chosen_tile.gnome = undefined;
+                } else {
+                    if (chosen_tile.gnome) {
+                        hide_gnome(chosen_tile);
+                        chosen_tile.gnome = undefined;
+                    }
+                    chosen_tile.is_barren = true;
+                    chosen_tile.has_thicket = false;
                 }
                 chosen_tile.draw();
                 using_ability = false;
