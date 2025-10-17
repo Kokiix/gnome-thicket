@@ -47,12 +47,16 @@ class HexTile {
 
         if (this.gnome) {player_n = this.gnome.owner;}
         else {this.gnome = new Gnome(player_n);}
-        strokeWeight(this.weight);
+        strokeWeight(CONFIG.TILE_STROKE);
         strokeJoin(BEVEL);
         if (player_n == 1) {player_color = CONFIG.P1_COLOR;}
         else if (player_n == 2) {player_color = CONFIG.P2_COLOR;}
         fill(player_color);
-        stroke(player_color);
+        let darker = player_color.slice();
+        for (let n in darker) {
+            darker[n] -= 25;
+        }
+        stroke(darker);
         if (this.gnome.type) {
             triangle(
                 this.x - CONFIG.gnome_size, this.y + CONFIG.gnome_size,
