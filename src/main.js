@@ -68,10 +68,12 @@ function handle_board_click() {
                         hide_gnome(chosen_tile);
                     }
                 } else if (highlighted_tiles[0].gnome.type == "ruffian") {
+                    killed_gnomes[current_player].push(chosen_tile.gnome.n_stripes);
                     hide_gnome(chosen_tile);
                     chosen_tile.gnome = undefined;
                 } else {
                     if (chosen_tile.gnome) {
+                        killed_gnomes[current_player].push(chosen_tile.gnome.n_stripes);
                         hide_gnome(chosen_tile);
                         chosen_tile.gnome = undefined;
                     }
@@ -142,15 +144,15 @@ function handle_class_sel_click() {
     let margin_size = (width - CONFIG.board_right_border - CONFIG.class_sel.WIDTH) / 2;
     let surprise = false;
     if (mouseX > CONFIG.board_right_border + margin_size && mouseX < width - margin_size) {
-        if (mouseY > CONFIG.class_sel.top_border && mouseY < CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT/3) {
+        if (mouseY > CONFIG.class_sel.top_border && mouseY < CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT/3 && !revealed_gnomes[current_player].includes(1)) {
             highlighted_tiles[0].gnome = new Gnome(current_player, "gardener");
             if (!surprise_attack_tile.has_thicket && !surprise_attack_tile.is_barren) surprise = true;
             revealed_gnomes[current_player].push(1);
-        } else if (mouseY > CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT/3 && mouseY < CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT * 2/3) {
+        } else if (mouseY > CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT/3 && mouseY < CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT * 2/3 && !revealed_gnomes[current_player].includes(2)) {
             highlighted_tiles[0].gnome = new Gnome(current_player, "ruffian");
             if (surprise_attack_tile.gnome && surprise_attack_tile.gnome.type && surprise_attack_tile.gnome.owner != current_player) surprise = true;
             revealed_gnomes[current_player].push(2);
-        } else if (mouseY > CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT * 2/3 && mouseY < CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT) {
+        } else if (mouseY > CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT * 2/3 && mouseY < CONFIG.class_sel.top_border + CONFIG.class_sel.HEIGHT && !revealed_gnomes[current_player].includes(3)) {
             highlighted_tiles[0].gnome = new Gnome(current_player, "salt");
             if (surprise_attack_tile.has_thicket) surprise = true;
             revealed_gnomes[current_player].push(3);
@@ -290,11 +292,15 @@ function highlight_revealed_moves(q, y, draw_req = t => !t.gnome, highlight_req 
     select(hex_grid[q][y - 1]);
 
     q -= 1;
-    select(hex_grid[q][y + ((q < 3) ? -1 : 0)]);
-    select(hex_grid[q][y + ((q >= 3) ? 1 : 0)]);
+    if (hex_grid[q])  {
+        select(hex_grid[q][y + ((q < 3) ? -1 : 0)]);
+        select(hex_grid[q][y + ((q >= 3) ? 1 : 0)]);
+    }
     q += 2;
-    select(hex_grid[q][y + ((q > 3) ? -1 : 0)]);
-    select(hex_grid[q][y + ((q <= 3) ? 1 : 0)]);
+    if (hex_grid[q])  {
+        select(hex_grid[q][y + ((q > 3) ? -1 : 0)]);
+        select(hex_grid[q][y + ((q <= 3) ? 1 : 0)]);
+    }
     for (let i in draw_on_top) {
         draw_on_top[i].draw_select([255, 0, 0]);
     }
@@ -388,8 +394,6 @@ function hide_gnome(tile) {
             revealed_gnomes[player].splice(n, 1); break;
         }
     }
-    killed_gnomes[current_player].push(tile.gnome.n_stripes);
-    console.log(killed_gnomes[current_player].length);
     if (killed_gnomes[current_player].length == 2) {
         // fill(200, 200, 200, 75);
         // strokeWeight(0);
@@ -397,6 +401,7 @@ function hide_gnome(tile) {
         textSize(250);
         clear()
         text("GAME OVER", 0, height / 2);
+        hex_grid = [];
     }
     tile.gnome.type = undefined;
 }
